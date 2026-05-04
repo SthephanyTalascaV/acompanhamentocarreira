@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Admin helper - Jonathan is the admin
+    function isAdmin() {
+      // Simplified for debug and reliability: check only email
+      return isSignedIn() && request.auth.token.email == 'jonathan.dornelas@nibo.com.br';
+    }
+
+    function isOwner(data) {
+      // Prioritize direct field access to avoid get() read limits
+      return (data.keys().has('ownerEmail') && data.ownerEmail == request.auth.token.email) || 
+             (data.keys().has('advisorId') && get(/databases/$(database)/documents/advisors/$(data.advisorId)).data.ownerEmail == request.auth.token.email);
+    }
+
+    // --- Entities ---
+
+    match /advisors/{advisorId} {
+      allow get, list: if isSignedIn() && (resource.data.ownerEmail == request.auth.token.email || isAdmin());
+      allow create: if isSignedIn() && (incoming().ownerEmail == request.auth.token.email || isAdmin());
+      allow update: if isAdmin() || (isSignedIn() && existing().ownerEmail == request.auth.token.email && incoming().ownerEmail == existing().ownerEmail);
+      allow delete: if isAdmin() || (isSignedIn() && existing().ownerEmail == request.auth.token.email);
+    }
+
+    match /performance/{perfId} {
+      function isValidPerformance(data) {
+        return data.advisorId is string && 
+               data.month is string && data.month.matches('^[0-9]{4}-[0-9]{2}$') &&
+               data.percentage is number &&
+               data.status in ['normal', 'vacation', 'ramp'];
+      }
+      
+      allow get, list: if isSignedIn() && (isAdmin() || isOwner(resource.data));
+      allow create: if isSignedIn() && (isAdmin() || isOwner(incoming())) && isValidPerformance(incoming());
+      allow update: if isSignedIn() && (isAdmin() || isOwner(existing())) && isValidPerformance(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['percentage', 'status'])
+      );
+      allow delete: if isAdmin() || (isSignedIn() && isOwner(existing()));
+    }
+
+    match /checklists/{itemId} {
+      function isValidChecklistItem(data) {
+        return data.advisorId is string && 
+               data.title is string && data.title.size() <= 200 &&
+               data.category is string &&
+               data.isCompleted is bool;
+      }
+
+      allow get, list: if isSignedIn() && (isAdmin() || isOwner(resource.data));
+      allow create: if isSignedIn() && (isAdmin() || isOwner(incoming())) && isValidChecklistItem(incoming());
+      allow update: if isSignedIn() && (isAdmin() || isOwner(existing())) && 
+                   isValidChecklistItem(incoming()) &&
+                   incoming().diff(existing()).affectedKeys().hasOnly(['isCompleted']);
+      allow delete: if isAdmin() || (isSignedIn() && isOwner(existing()));
+    }
+
+    match /meetings/{meetingId} {
+      allow get, list: if isSignedIn() && (isAdmin() || isOwner(resource.data));
+      allow create: if isSignedIn() && (isAdmin() || isOwner(incoming()));
+      allow update: if isSignedIn() && (isAdmin() || isOwner(existing()));
+      allow delete: if isAdmin() || (isSignedIn() && isOwner(existing()));
+    }
+
+    match /milestones/{milestoneId} {
+      allow get, list: if isSignedIn() && (isAdmin() || isOwner(resource.data));
+      allow create: if isSignedIn() && (isAdmin() || isOwner(incoming()));
+      allow update: if isSignedIn() && (isAdmin() || isOwner(existing()));
+      allow delete: if isAdmin() || (isSignedIn() && isOwner(existing()));
+    }
+
+    match /scorecards/{scorecardId} {
+      function isValidScorecard(data) {
+        return data.advisorId is string && 
+               data.year is string && data.year.matches('^[0-9]{4}$') &&
+               data.criteria is map &&
+               data.criteria.operational is number &&
+               data.criteria.routine is number &&
+               data.criteria.teamwork is number &&
+               data.criteria.client is number &&
+               data.criteria.values is number &&
+               data.finalScore is number &&
+               data.classification is string;
+      }
+
+      allow get, list: if isSignedIn() && (isAdmin() || isOwner(resource.data));
+      allow create: if isSignedIn() && (isAdmin() || isOwner(incoming())) && isValidScorecard(incoming());
+      allow update: if isSignedIn() && (isAdmin() || isOwner(existing())) && isValidScorecard(incoming());
+      allow delete: if isAdmin() || (isSignedIn() && isOwner(existing()));
+    }
+  }
+}

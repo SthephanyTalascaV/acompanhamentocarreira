@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Advisor": {
+      "title": "Advisor",
+      "description": "A consultant or advisor being tracked.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "ownerEmail": { "type": "string" },
+        "averageGrade": { "type": "number" },
+        "currentProgress": { "type": "number" },
+        "totalMilestones": { "type": "number" },
+        "completedMilestones": { "type": "number" }
+      },
+      "required": ["name", "role"]
+    },
+    "PerformanceRecord": {
+      "title": "Performance Record",
+      "description": "Monthly performance percentage for an advisor.",
+      "type": "object",
+      "properties": {
+        "advisorId": { "type": "string" },
+        "month": { "type": "string", "description": "YYYY-MM format" },
+        "percentage": { "type": "number" },
+        "status": { "type": "string", "enum": ["normal", "vacation", "ramp"] }
+      },
+      "required": ["advisorId", "month", "percentage"]
+    },
+    "ChecklistItem": {
+      "title": "Checklist Item",
+      "description": "A tactical improvement point for an advisor.",
+      "type": "object",
+      "properties": {
+        "advisorId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "isCompleted": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["advisorId", "title", "isCompleted"]
+    },
+    "Meeting": {
+      "title": "Meeting",
+      "description": "Details about 1-on-1 meetings.",
+      "type": "object",
+      "properties": {
+        "advisorId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" },
+        "nextMeetingDate": { "type": "string", "format": "date-time" },
+        "participants": { "type": "array", "description": "List of participant names" }
+      },
+      "required": ["advisorId", "date"]
+    },
+    "Milestone": {
+      "title": "Milestone",
+      "description": "A milestone in the success journey.",
+      "type": "object",
+      "properties": {
+        "advisorId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "dueDate": { "type": "string", "format": "date-time" },
+        "completedDate": { "type": "string", "format": "date-time" },
+        "order": { "type": "number" }
+      },
+      "required": ["advisorId", "title", "order"]
+    },
+    "Scorecard": {
+      "title": "Scorecard",
+      "description": "Annual performance evaluation scorecard.",
+      "type": "object",
+      "properties": {
+        "advisorId": { "type": "string" },
+        "year": { "type": "string", "description": "YYYY format" },
+        "criteria": {
+          "type": "object",
+          "properties": {
+            "operational": { "type": "number" },
+            "routine": { "type": "number" },
+            "teamwork": { "type": "number" },
+            "client": { "type": "number" },
+            "values": { "type": "number" }
+          }
+        },
+        "finalScore": { "type": "number" },
+        "classification": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["advisorId", "year", "criteria", "finalScore", "classification"]
+    }
+  },
+  "firestore": {
+    "advisors/{advisorId}": {
+      "schema": "Advisor",
+      "description": "Root collection for advisors."
+    },
+    "performance": {
+      "schema": "PerformanceRecord",
+      "description": "Performance history for all advisors."
+    },
+    "checklists": {
+      "schema": "ChecklistItem",
+      "description": "Improvement points."
+    },
+    "meetings": {
+      "schema": "Meeting",
+      "description": "1-on-1 meeting logs."
+    },
+    "milestones": {
+      "schema": "Milestone",
+      "description": "Journey milestones."
+    },
+    "scorecards": {
+      "schema": "Scorecard",
+      "description": "Annual evaluation results."
+    }
+  }
+}
