@@ -1,16 +1,52 @@
+import { useState, useEffect } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { type PerformanceRecord, type Advisor } from '../types';
 import { formatPercentage, cn } from '../lib/utils';
 import { TrendingUp, Award, Clock, Calendar, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ScorecardView } from './ScorecardView';
+import { firebaseService } from '../service/firebaseService';
+import { auth } from '../lib/firebase';
 
-interface DashboardProps {
-  performance: PerformanceRecord[];
-  advisor: Advisor;
-}
+export function Dashboard() {
+  const [performance, setPerformance] = useState<PerformanceRecord[]>([]);
+  const [advisor, setAdvisor] = useState<Advisor | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export function Dashboard({ performance, advisor }: DashboardProps) {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) { setLoading(false); return; }
+      try {
+        const advisors = await firebaseService.getAdvisors() as Advisor[];
+        if (advisors && advisors.length > 0) {
+          const first = advisors[0];
+          setAdvisor(first);
+          const perf = await firebaseService.getPerformance(first.id) as PerformanceRecord[];
+          setPerformance(perf ?? []);
+        }
+      } finally {
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nibo-roxo" />
+      </div>
+    );
+  }
+
+  if (!advisor) {
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-500">
+        Nenhum consultor encontrado. Faça login para continuar.
+      </div>
+    );
+  }
+
   const latestPerformance = performance[performance.length - 1]?.percentage || 0;
   const prevPerformance = performance[performance.length - 2]?.percentage || 0;
   const diff = latestPerformance - prevPerformance;
