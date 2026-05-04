@@ -1,7 +1,7 @@
 import { type Advisor } from '../types';
 import { cn } from '../lib/utils';
 import { User, ChevronRight, LogOut } from 'lucide-react';
-import { firebaseService } from '../services/firebaseService';
+import { firebaseService } from '../service/firebaseService';
 import { auth } from '../lib/firebase';
 
 interface SidebarProps {

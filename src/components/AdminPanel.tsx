@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { firebaseService } from '../services/firebaseService';
+import { firebaseService } from '../service/firebaseService';
 import { Advisor, PerformanceRecord } from '../types';
 import { Save, Calendar, Trophy, CheckSquare, TrendingUp, AlertCircle, UserCog, UserPlus, Upload, Pencil, Plus, Trash2, Gauge, Star } from 'lucide-react';
 import { collection, addDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
