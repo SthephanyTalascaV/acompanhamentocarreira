@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Scorecard } from '../types';
-import { firebaseService } from '../services/firebaseService';
+import { firebaseService } from '../service/firebaseService';
 import { Gauge, Target, UserCheck, Users, Heart, ClipboardList, AlertTriangle, ChevronRight, Award } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';

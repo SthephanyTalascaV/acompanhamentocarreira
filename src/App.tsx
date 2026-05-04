@@ -1,7 +1,7 @@
 ﻿import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, PlusCircle, History, Bug, LogOut } from "lucide-react";
 import { cn } from "@/src/lib/utils";
-import Dashboard from "./components/Dashboard";
+import { Dashboard } from "./components/Dashboard";
 import NewAnalysis from "./components/NewAnalysis";
 import MeetingHistory from "./components/MeetingHistory";
 import ProductInsights from "./components/ProductInsights";
