@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+﻿import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, PlusCircle, History, Bug, LogOut } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import Dashboard from "./components/Dashboard";
@@ -8,14 +8,12 @@ import ProductInsights from "./components/ProductInsights";
 
 function Sidebar() {
   const location = useLocation();
-
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/" },
     { icon: PlusCircle, label: "Nova Análise", path: "/new" },
     { icon: History, label: "Histórico", path: "/history" },
     { icon: Bug, label: "Insights de Produto", path: "/insights" },
   ];
-
   return (
     <aside className="w-[260px] flex-shrink-0 flex flex-col text-white transition-all duration-300 z-20 nibo-gradient-1">
       <div className="p-7 mb-4">
@@ -24,16 +22,7 @@ function Sidebar() {
       </div>
       <nav className="flex-1 px-4 space-y-1.5">
         {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={cn(
-              "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-colors",
-              location.pathname === item.path
-                ? "font-semibold text-white bg-white/20 shadow-md"
-                : "font-medium text-white/70 hover:text-white hover:bg-white/10"
-            )}
-          >
+          <Link key={item.path} to={item.path} className={cn("flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-colors", location.pathname === item.path ? "font-semibold text-white bg-white/20 shadow-md" : "font-medium text-white/70 hover:text-white hover:bg-white/10")}>
             <item.icon className="w-4 h-4" />
             {item.label}
           </Link>
